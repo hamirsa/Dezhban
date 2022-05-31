@@ -18,7 +18,7 @@ class OTPManager:
 
     def generate_save(self):
         self._otp = random.randint(10999, 987654)
-        otp_redis.set(self.phone_number, self._otp, 60)
+        otp_redis.set(name=self.phone_number, value=self._otp, ex=180)
 
     def send(self):
         send_sms(phone_number=self.phone_number, otp=self.value)
