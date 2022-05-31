@@ -17,7 +17,7 @@ class SendOTPAPIView(views.APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class VerifyOTPView(views.APIView):
+class VerifyOTPAPIView(views.APIView):
 
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
