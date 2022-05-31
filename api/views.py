@@ -4,7 +4,7 @@ from api.tasks import send_otp_task
 from api.models import CustomUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 class SendOTPAPIView(views.APIView):
@@ -30,13 +30,14 @@ class VerifyOTPView(views.APIView):
                 user = CustomUser.objects.get(phone_number=data['phone_number'])
             except CustomUser.DoesNotExist:
                 user = CustomUser.objects.create(phone_number=data['phone_number'])
+            
+            if user.is_active:
+                refresh = RefreshToken.for_user(user)
+                return Response(ObtainTokenSerializer({
+                    'access': str(refresh.access_token),    
+                    'refresh': str(refresh)
 
-            refresh = RefreshToken.for_user(user)
+                }).data)
+            return Response(data={"detail": "User is deactivated."}, status=status.HTTP_403_FORBIDDEN)
 
-            return Response(ObtainTokenSerializer({
-                'access': str(refresh.access_token),    
-                'refresh': str(refresh)
-
-            }).data)
-
-        return Response(data={"Failed": "Wrong phone number or OTP"}, status=status.HTTP_403_FORBIDDEN)
+        return Response(data={"detail": "Wrong phone number or OTP"}, status=status.HTTP_403_FORBIDDEN)
