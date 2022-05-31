@@ -4,10 +4,16 @@ from api.tasks import send_otp_task
 from api.models import CustomUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
+from rest_framework.throttling import ScopedRateThrottle
+from api.throttling import SendOTPThrottle
 
 class SendOTPAPIView(views.APIView):
+    """
+    Clients can use this APIView to receive an OTP for login/register.
+    """
+
+    throttle_classes = (ScopedRateThrottle, SendOTPThrottle)
+    throttle_scope = 'send-otp'
 
     def post(self, request):
         serializer = SendOTPSerializer(data=request.data)
@@ -18,6 +24,12 @@ class SendOTPAPIView(views.APIView):
 
 
 class VerifyOTPAPIView(views.APIView):
+    """
+    No matter clients are going to login or register, they can call this api
+    to verify their OTPs and receive access & refresh token for further uses.
+    """
+
+    throttle_scope = 'verify-otp'
 
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
