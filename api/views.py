@@ -1,18 +1,18 @@
-from rest_framework import views
+from rest_framework import views, permissions, throttling
 from api.serializers import SendOTPSerializer, VerifyOTPSerializer
 from api.tasks import send_otp_task
 from api.models import CustomUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.throttling import ScopedRateThrottle
 from api.throttling import SendOTPThrottle
+
 
 class SendOTPAPIView(views.APIView):
     """
     Clients can use this APIView to receive an OTP for login/register.
     """
 
-    throttle_classes = (ScopedRateThrottle, SendOTPThrottle)
+    throttle_classes = (throttling.ScopedRateThrottle, SendOTPThrottle)
     throttle_scope = 'send-otp'
 
     def post(self, request):
@@ -53,3 +53,10 @@ class VerifyOTPAPIView(views.APIView):
             return Response(data={"detail": "User is deactivated."}, status=status.HTTP_403_FORBIDDEN)
 
         return Response(data={"detail": "Wrong phone number or OTP"}, status=status.HTTP_403_FORBIDDEN)
+
+
+class TestPageAPIView(views.APIView):
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def get(self, request):
+        return Response(data={"detail": "you can see this, so you've done great so far :)"})
